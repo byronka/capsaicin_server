@@ -25,8 +25,8 @@ int run_server() {
 			perror("recvfrom error");
 			exit(6);
 		}
-
-		printf("UDP server says %s", buf);
+		//sa.sin_addr.s_addr = htonl(INADDR_ANY);
+		fprintf(stderr, "\nsending data to client at %d", client_name.sin_addr.s_addr);
 		strcat(buf, "OK!\n");
 
 		if (sendto(s, buf, strlen(buf)+1, 0,
