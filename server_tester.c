@@ -35,8 +35,6 @@ int main(int argc, char* argv[])
   my_addr.sin_addr.s_addr = INADDR_ANY;
   my_addr.sin_port = 0;
 
-  bind(sockd, (struct sockaddr*)&my_addr, sizeof(my_addr));
-
   strcpy(buf, "Hello world\n");
 
   /* server address */ 
