@@ -1,29 +1,28 @@
 #include <stdio.h>
 
 void
-test_foo() {
+createSocket_test() {
 	int result = createSocket(1);
-	if (result != 5) {
-		printf("should have been 5 but was %d\n", result);
+	if (result < 0) {
+		printf("result should have been greater than 0 but was %d\n", result);
 	}
 }
 
-void
-test_bar() {
-	int result = createSocket(1);
-	if (result != 8) {
-		printf("should have been 8 but was %d\n", result);
-	}
-}
+//void
+//prepareSocketAddress_test() {
+//	struct sockaddr_in sa;
+//	int result = createSocket(1);
+//	sa = prepareSocketAddress(sa, 80)
+//	printf("\n%d");
+//}
 
 void
-all_tests() {
-	test_foo();
-	test_bar();
+doBind_test() {
+
 }
 
 int
 main(int argc, char** argv) {
-	all_tests();
+	createSocket_test();
 	return 0;
 }
