@@ -22,4 +22,8 @@ test: create_and_prepare_socket.o create_and_prepare_socket_tests.o
 
 create_and_prepare_socket_tests.o: create_and_prepare_socket_tests.c
 	 cc -c create_and_prepare_socket_tests.c
-	 
+
+servertest: server_tester.o
+	 cc server_tester.c -o servertest
+	 ./servertest 127.0.0.1 4321
+	 rm servertest

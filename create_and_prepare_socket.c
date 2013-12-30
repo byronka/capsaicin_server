@@ -8,7 +8,7 @@
 int 
 createSocket(int s) {
 	if ((s = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("socket");
+		perror("socket creation error");
 		exit(1);
 	}
 	return s;
@@ -28,7 +28,7 @@ prepareSocketAddress(struct sockaddr_in sa, int port) {
 struct sockaddr_in
 doBind(int s, struct sockaddr_in sa) {
 	if (bind(s, (struct sockaddr *)&sa, sizeof sa) < 0) {
-		perror("bind");
+		perror("bind error");
 		exit(2);
 	}
 	return sa;
