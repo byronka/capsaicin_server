@@ -4,9 +4,19 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <strings.h>
+ #include <stdio.h>
 
 int 
-createSocket(int s) {
+createSocket_tcp(int s) {
+	if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("socket creation error");
+		exit(1);
+	}
+	return s;
+}
+
+int 
+createSocket_udp(int s) {
 	if ((s = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket creation error");
 		exit(1);

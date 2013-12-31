@@ -1,3 +1,4 @@
-extern int createSocket();
+extern int createSocket_udp();
+extern int createSocket_tcp();
 extern struct sockaddr_in prepareSocketAddress(struct sockaddr_in sa, int port);
 extern struct sockaddr_in doBind(int s, struct sockaddr_in sa);
