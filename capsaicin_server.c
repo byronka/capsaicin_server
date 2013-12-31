@@ -53,10 +53,33 @@ int run_server() {
 		while(1) { /* will break out if eof, exit() otherwise */
 			bzero(buf, MAX_BUF);
 			/* move info from file into buffer */
-			int result = read(myfile, &buf, MAX_BUF);
+			int result = read(myfile, buf, MAX_BUF);
 #ifdef DEBUG
 fprintf(stderr, "reading from fd %d, result: %d\n", myfile, result);
+int index;
+for (index = 0; index < 128; index++) {
+fprintf(stderr, "%d ", buf[index]);
+}
+fprintf(stderr, "...\n");
 #endif
+			if (result > 0) { /* some bytes to send */
+				/* duplicate send to client START*/
+
+				if (sendto(s_udp, buf, MAX_BUF, 0,
+					(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
+					perror("sendto error");
+					exit(7);
+				}
+#ifdef DEBUG
+fprintf(stderr, "sending...\n");
+int index1;
+for (index1 = 0; index1 < 128; index1++) {
+fprintf(stderr, "%d ", buf[index1]);
+}
+fprintf(stderr, "...\n");
+#endif
+				/* send to client END*/
+			}
 			if (result == 0) { /* returning 0 means eof */
 #ifdef DEBUG
 fprintf(stderr, "closing fd\n");
@@ -65,14 +88,6 @@ fprintf(stderr, "closing fd\n");
 					perror("close file error");
 					exit(14);
 				}
-				/* duplicate send to client START*/
-
-				if (sendto(s_udp, buf, strlen(buf)+1, 0,
-					(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
-					perror("sendto error");
-					exit(7);
-				}
-				/* send to client END*/
 				break; /* here, we leave the loop because of eof*/
 			}
 			if (result < 0) { /* -1 means general error */
@@ -82,11 +97,19 @@ fprintf(stderr, "closing fd\n");
 
 			/* send to client START*/
 
-			if (sendto(s_udp, buf, strlen(buf)+1, 0,
+			if (sendto(s_udp, buf, MAX_BUF, 0,
 				(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
 				perror("sendto error");
 				exit(7);
 			}
+#ifdef DEBUG
+fprintf(stderr, "sending...\n");
+int index2;
+for (index2 = 0; index2 < 128; index2++) {
+fprintf(stderr, "%d ", buf[index2]);
+}
+fprintf(stderr, "...\n");
+#endif
 			/* send to client END*/
 		}
 	}
