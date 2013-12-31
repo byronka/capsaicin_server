@@ -3,11 +3,7 @@
 
 void
 print_ip_addr_32_bit (unsigned char* client_addr_c) {
-	int index;
-	for (index = 0; index < 4; index++) {
-		fprintf(stderr, "%u.", client_addr_c[index]);
-	}
-	fprintf(stderr, "\n");
+	fprintf(stderr, "%u.%u.%u.%u\n", client_addr_c[0],client_addr_c[1],client_addr_c[2],client_addr_c[3]);
 }
 
 unsigned char*
