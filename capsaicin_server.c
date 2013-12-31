@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include "create_and_prepare_socket.h"
+#include "ntwk_utils.h"
 #define MAX_BUF 1024
 
 int run_server() {
@@ -20,14 +21,18 @@ int run_server() {
 	struct sockaddr_in client_name;
 	int addrlen = sizeof(client_name);
 	for(;;){
+		bzero(buf, MAX_BUF);
 		if (recvfrom(s, buf, MAX_BUF, 0,
 			(struct sockaddr*)&client_name, &addrlen) < 0) {
 			perror("recvfrom error");
 			exit(6);
 		}
-		//sa.sin_addr.s_addr = htonl(INADDR_ANY);
-		fprintf(stderr, "\nsending data to client at %d", client_name.sin_addr.s_addr);
-		strcat(buf, "OK!\n");
+
+		uint32_t client_address = ntohl(client_name.sin_addr.s_addr);
+		unsigned char* client_addr_c = convert_ip_addr(client_address);
+		fprintf(stderr, "\nsending data to client at ");
+		print_ip_addr_32_bit(client_addr_c);
+		strcat(buf, "OK");
 
 		if (sendto(s, buf, strlen(buf)+1, 0,
 			(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
