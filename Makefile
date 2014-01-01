@@ -3,8 +3,8 @@ CC=clang
 
 all: capsaicin_server
 
-capsaicin_server: create_and_prepare_socket.o capsaicin_server.o ntwk_utils.o main.o
-	 $(CC) $(CFLAGS) create_and_prepare_socket.o capsaicin_server.o ntwk_utils.o main.o -o capsaicin_server
+capsaicin_server: capsaicin_server.o ntwk_utils.o main.o
+	 $(CC) $(CFLAGS) capsaicin_server.o ntwk_utils.o main.o -o capsaicin_server
 
 create_and_prepare_socket.o: create_and_prepare_socket.c
 	 $(CC) $(CFLAGS) -c create_and_prepare_socket.c
