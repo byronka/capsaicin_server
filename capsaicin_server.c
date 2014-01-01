@@ -12,11 +12,51 @@
 
 #define MAX_BUF 1024
 
+void
+print_buf_sample(unsigned char* buf) {
+	int index;
+	for (index = 0; index < 128; index++) {
+		fprintf(stderr, "%d ", buf[index]);
+	}
+	fprintf(stderr, "...\n");
+}
+
+ssize_t
+Sendto(int s, const void *msg, size_t len, int flags,
+	const struct sockaddr *to, socklen_t tolen) {
+	ssize_t result;
+	if ((result = sendto(s, msg, len, flags, to, tolen)) < 0) {
+		perror("sendto error");
+		exit(7);
+	}
+	return result;
+}
+
+int
+Open(const char *path, int flags, ...) {
+	int fd;
+	if ((fd = open(path, flags)) < 0) {
+		perror("open file error");
+		exit(12);
+	}
+	return fd;
+}
+
+ssize_t
+Recvfrom(int s, void * restrict buf, size_t len, int flags, struct sockaddr * restrict from, socklen_t * restrict fromlen) {
+	ssize_t result;
+	if ((result = recvfrom(s, buf, len, flags, from, fromlen)) < 0) {
+		perror("recvfrom error");
+		exit(6);
+	}
+	return result;
+}
+
 int run_server() {
 	register int s_udp;
 	register int s_tcp;
 	struct sockaddr_in sa;
-	char buf[MAX_BUF];
+	unsigned char buf[MAX_BUF];
 
 	s_udp = createSocket_udp(s_udp);
 	sa = prepareSocketAddress(sa, 4321);
@@ -29,11 +69,7 @@ int run_server() {
 		/* receive from client */
 
 		bzero(buf, MAX_BUF); /* is it necessary to zero this out? */
-		if (recvfrom(s_udp, buf, MAX_BUF, 0,
-			(struct sockaddr*)&client_name, &addrlen) < 0) {
-			perror("recvfrom error");
-			exit(6);
-		}
+		Recvfrom(s_udp, buf, MAX_BUF, 0, (struct sockaddr*)&client_name, &addrlen);
 
 		/* print info on client */
 
@@ -44,39 +80,26 @@ int run_server() {
 
 		/* open the file we are sending */
 		int myfile;
-		if ((myfile = open("/usr/home/byron/binary_file", O_RDONLY)) < 0) {
-			perror("open file error");
-			exit(12);
-		}
+		myfile = Open("/usr/home/byron/binary_file", O_RDONLY);
 
 		/* start loop to send full contents via UDP */
 		while(1) { /* will break out if eof, exit() otherwise */
 			bzero(buf, MAX_BUF);
 			/* move info from file into buffer */
+
 			int result = read(myfile, buf, MAX_BUF);
 #ifdef DEBUG
 fprintf(stderr, "reading from fd %d, result: %d\n", myfile, result);
-int index;
-for (index = 0; index < 128; index++) {
-fprintf(stderr, "%d ", buf[index]);
-}
-fprintf(stderr, "...\n");
+print_buf_sample(buf);
 #endif
 			if (result > 0) { /* some bytes to send */
 				/* duplicate send to client START*/
 
-				if (sendto(s_udp, buf, MAX_BUF, 0,
-					(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
-					perror("sendto error");
-					exit(7);
-				}
+				Sendto(s_udp, buf, MAX_BUF, 0,
+					(struct sockaddr*)&client_name, sizeof(client_name));
 #ifdef DEBUG
 fprintf(stderr, "sending...\n");
-int index1;
-for (index1 = 0; index1 < 128; index1++) {
-fprintf(stderr, "%d ", buf[index1]);
-}
-fprintf(stderr, "...\n");
+print_buf_sample(buf);
 #endif
 				/* send to client END*/
 			}
@@ -97,18 +120,11 @@ fprintf(stderr, "closing fd\n");
 
 			/* send to client START*/
 
-			if (sendto(s_udp, buf, MAX_BUF, 0,
-				(struct sockaddr*)&client_name, sizeof(client_name)) < 0) {
-				perror("sendto error");
-				exit(7);
-			}
+			Sendto(s_udp, buf, MAX_BUF, 0, 
+				(struct sockaddr*)&client_name, sizeof(client_name));
 #ifdef DEBUG
 fprintf(stderr, "sending...\n");
-int index2;
-for (index2 = 0; index2 < 128; index2++) {
-fprintf(stderr, "%d ", buf[index2]);
-}
-fprintf(stderr, "...\n");
+print_buf_sample(buf);
 #endif
 			/* send to client END*/
 		}
