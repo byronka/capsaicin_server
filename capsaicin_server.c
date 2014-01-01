@@ -21,6 +21,16 @@ Open(const char *path, int flags, ...) {
 }
 
 int
+Close(int fd) {
+	int result;
+	if ((result = close(fd)) < 0) {
+		perror("close file error");
+		exit(5);
+	}
+	return result;
+}
+
+int
 Socket(int domain, int type, int protocol) {
 	int result;
 	if ((result = socket(domain, type, protocol)) < 0) {
@@ -83,37 +93,32 @@ Sendfile(int fd, int s, off_t offset, size_t nbytes, struct sf_hdtr *hdtr, off_t
 	return result;
 }
 
-int run_server() {
-	register int primary_socket, accepted_socket;
+int
+start_sending_server(int primary_sending_socket, struct sockaddr_in sa_send) {
 	socklen_t size_var;
-	struct sockaddr_in sa;
-
-	primary_socket = Socket(PF_INET, SOCK_STREAM, 0);
-	sa = prepareSocketAddress(sa, 4321);
-	Bind(primary_socket, (struct sockaddr *)&sa, sizeof sa);
-
+	register int accepted_socket;
     switch (fork()) {
         case -1:
             perror("fork");
-            return 3;
+            exit(3);
             break;
         default:
-            close(primary_socket);
+            close(primary_sending_socket);
             return 0;
             break;
         case 0:
             break;
     }
 
-    Listen(primary_socket, BACKLOG);
+    Listen(primary_sending_socket, BACKLOG);
 
     for (;;) {
-        size_var = sizeof sa;
-        accepted_socket = Accept(primary_socket, (struct sockaddr *)&sa, &size_var);
+        size_var = sizeof sa_send;
+        accepted_socket = Accept(primary_sending_socket, (struct sockaddr *)&sa_send, &size_var);
 		int myfile = Open("/usr/home/byron/binary_file", O_RDONLY);
 
-		 off_t sbytes;
-		 Sendfile(myfile,
+		off_t sbytes;
+		Sendfile(myfile,
 					accepted_socket, /* socket */
 					0, /* offset of 0 */
 					0, /* number of bytes, 0 being send whole file */
@@ -122,6 +127,53 @@ int run_server() {
 					0 /* no flags */
 					);
     }
+}
+
+int
+start_receiving_server(int primary_receiving_socket, struct sockaddr_in sa_receive) {
+	socklen_t size_var;
+	register int accepted_socket;
+    switch (fork()) {
+        case -1:
+            perror("fork");
+            exit(3);
+            break;
+        default:
+            close(primary_receiving_socket);
+            return 0;
+            break;
+        case 0:
+            break;
+    }
+
+    Listen(primary_receiving_socket, BACKLOG);
+
+    for (;;) {
+        size_var = sizeof sa_receive;
+        accepted_socket = Accept(primary_receiving_socket, (struct sockaddr *)&sa_receive, &size_var);
+		int myfile = Open("/usr/home/byron/receive_file", O_RDWR | O_CREAT | O_TRUNC);
+		
+		/* do nothing for now */
+		Close(myfile);
+    }
+}
+
+int run_server() {
+	int primary_receiving_socket, primary_sending_socket;
+	struct sockaddr_in sa_send;
+	struct sockaddr_in sa_receive;
+
+	primary_sending_socket = Socket(PF_INET, SOCK_STREAM, 0);
+	primary_receiving_socket = Socket(PF_INET, SOCK_STREAM, 0);
+
+	sa_send = prepareSocketAddress(sa_send, 4321);
+	sa_receive = prepareSocketAddress(sa_receive, 4322);
+
+	Bind(primary_sending_socket, (struct sockaddr *)&sa_send, sizeof sa_send);
+	Bind(primary_receiving_socket, (struct sockaddr *)&sa_receive, sizeof sa_receive);
+
+	start_sending_server(primary_sending_socket, sa_send);
+	start_receiving_server(primary_receiving_socket, sa_receive);
 
 	return 0;
 }
