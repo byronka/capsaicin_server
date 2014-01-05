@@ -10,8 +10,18 @@
 #include "ntwk_utils.h"
 #define BACKLOG 4
 
-#define REQUEST_VIDEO 1
-#define SEND_VIDEO 2
+#define OK_MESSAGE 0
+#define CLIENT_WANTS_VIDEO 1
+#define CLIENT_SENDING_US_VIDEO 2
+
+
+
+
+
+
+
+
+
 
 
 ssize_t
@@ -122,6 +132,30 @@ Sendfile(int fd, int s, off_t offset, size_t nbytes, struct sf_hdtr *hdtr, off_t
 }
 
 int
+read_from_stream_into_file(int socket, int file) {
+	ssize_t max_buf_size = 1024;
+	unsigned char buf[max_buf_size];
+	while(1) { /* will break out if eof, exit() otherwise */
+		bzero(buf, max_buf_size);
+		int result = Read(socket, buf, max_buf_size);
+		if (result > 0) { /* we read some bytes */
+			fprintf(stderr, "putting %d bytes into file\n", result);
+			Write(file, buf, result);
+		}
+		if (result == 0) { /* returning 0 means no more bytes to write */
+			fprintf(stderr, "closing the file\n");
+			Close(file);
+			break; /* here, we leave the loop if eof*/
+		}
+		if (result < 0) { /* -1 means general error */
+				perror("read socket error");
+				exit(13);
+		}
+	}
+	return 0; /* TODO - BK no return info implemented */
+}
+
+int
 send_requested_file(int socket, int id) {
 	/* TODO - BK - hardcoded for now, not fully implemented */
 	int myfile;
@@ -145,6 +179,17 @@ send_requested_file(int socket, int id) {
 	return 0;
 }
 
+int
+receive_file(int socket) {
+	/* reply to client we are ready */
+	unsigned char msg = OK_MESSAGE;
+	Write(socket, &msg, sizeof(&msg));
+
+	/* receive file */
+	int file = Open("/usr/home/byron/test_receive", O_RDWR | O_CREAT); /* TODO - BK - hardcoded for now - fix! */
+	read_from_stream_into_file(socket, file);
+	return 0;
+}
 
 int
 handle_accepted_socket(int socket) {
@@ -152,18 +197,17 @@ handle_accepted_socket(int socket) {
 	int request = Read(socket, buf, sizeof(buf));
 
 	/*we parse the bytes: first byte is the action, following are the id, if any */
-	/* request_video - the client wants a video */
-	/* send_video - the client wants to send the server a video*/
+	/* CLIENT_WANTS_VIDEO - the client wants a video */
+	/* CLIENT_SENDING_US_VIDEO - the client wants to send the server a video*/
     int action = buf[0];
 	int id = buf[1];
 
 	switch(action) {
-		case REQUEST_VIDEO:
+		case CLIENT_WANTS_VIDEO:
 			send_requested_file(socket, id);
 			break;
-		case SEND_VIDEO:
-			fprintf(stderr, "not yet implemented");
-			exit(13);
+		case CLIENT_SENDING_US_VIDEO:
+			receive_file(socket);
 			break;
 		default:
 			fprintf(stderr, "no action sent. buffer[0] is %u and "
