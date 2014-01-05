@@ -10,6 +10,20 @@
 #include "ntwk_utils.h"
 #define BACKLOG 4
 
+#define REQUEST_VIDEO 1
+#define SEND_VIDEO 2
+
+
+ssize_t
+Read(int d, void *buf, size_t nbytes) {
+	ssize_t result;
+	if ((result = read(d, buf, nbytes)) < 0) {
+		perror("read error");
+		exit(9);
+	}
+	return result;
+}
+
 
 ssize_t
 Write(int d, const void *buf, size_t nbytes) {
@@ -99,22 +113,79 @@ Sendfile(int fd, int s, off_t offset, size_t nbytes, struct sf_hdtr *hdtr, off_t
 	int result;
 	if ((result = sendfile(fd, s, offset, nbytes, hdtr, sbytes, flags)) < 0) {
 		perror("sendfile error");
+		fprintf(stderr, "sendfile error; inputs fd[%d] s[%d] offset[%lld]"
+				"nbytes[%d] hdtr[%p] sbytes[%p] flags[%d]",
+				fd, s, offset, nbytes, hdtr, sbytes, flags);
 		exit(1);
 	}
 	return result;
 }
 
 int
+send_requested_file(int socket, int id) {
+	/* TODO - BK - hardcoded for now, not fully implemented */
+	int myfile;
+	if (id != 5) {
+		fprintf(stderr, "did not receive valid id\n");
+		return -1;
+	}
+
+	myfile = Open("/usr/home/byron/binary_file", O_RDONLY);
+
+	off_t sbytes;
+	Sendfile(
+		myfile,
+		socket,
+		0, /* offset of 0 */
+		0, /* number of bytes, 0 being send whole file */
+		NULL, /* no header needed yet */
+		&sbytes, /* we'll get the number of bytes sent */
+		0 /* no flags */
+		);
+	return 0;
+}
+
+
+int
+handle_accepted_socket(int socket) {
+	unsigned char buf[2];
+	int request = Read(socket, buf, sizeof(buf));
+
+	/*we parse the bytes: first byte is the action, following are the id, if any */
+	/* request_video - the client wants a video */
+	/* send_video - the client wants to send the server a video*/
+    int action = buf[0];
+	int id = buf[1];
+
+	switch(action) {
+		case REQUEST_VIDEO:
+			send_requested_file(socket, id);
+			break;
+		case SEND_VIDEO:
+			fprintf(stderr, "not yet implemented");
+			exit(13);
+			break;
+		default:
+			fprintf(stderr, "no action sent. buffer[0] is %u and "
+					"buffer[1] is %u. aborting\n", buf[0], buf[1]);
+			exit(12);
+	}
+	
+	Close(socket);
+	return 0;
+}
+
+int
 fork_server(int primary_socket, struct sockaddr_in sa) {
 	socklen_t size_var;
-	register int accepted_socket;
+	int accepted_socket;
     switch (fork()) {
         case -1:
             perror("fork");
             exit(3);
             break;
         default:
-            close(primary_socket);
+            Close(primary_socket);
             return 0;
             break;
         case 0:
@@ -126,17 +197,7 @@ fork_server(int primary_socket, struct sockaddr_in sa) {
     for (;;) {
         size_var = sizeof sa;
         accepted_socket = Accept(primary_socket, (struct sockaddr *)&sa, &size_var);
-		int myfile = Open("/usr/home/byron/binary_file", O_RDONLY);
-
-		off_t sbytes;
-		Sendfile(myfile,
-			accepted_socket, /* socket */
-			0, /* offset of 0 */
-			0, /* number of bytes, 0 being send whole file */
-			NULL, /* no header needed yet */
-			&sbytes, /* we'll get the number of bytes sent */
-			0 /* no flags */
-			);
+		handle_accepted_socket(accepted_socket);
     }
 }
 
@@ -148,7 +209,7 @@ int run_server() {
 	sa = prepareSocketAddress(sa, 4321);
 	Bind(primary_socket, (struct sockaddr *)&sa, sizeof sa);
 	fork_server(primary_socket, sa);
-	return 0;
+	return 0;   /* no return code implemented */
 }
 
 
