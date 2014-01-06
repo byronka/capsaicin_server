@@ -12,17 +12,7 @@
 
 #define OK_MESSAGE 0
 #define CLIENT_WANTS_VIDEO 1
-#define CLIENT_SENDING_US_VIDEO 2
-
-
-
-
-
-
-
-
-
-
+#define CLIENT_SENDING_SERVER_VIDEO 2
 
 ssize_t
 Read(int d, void *buf, size_t nbytes) {
@@ -33,7 +23,6 @@ Read(int d, void *buf, size_t nbytes) {
 	}
 	return result;
 }
-
 
 ssize_t
 Write(int d, const void *buf, size_t nbytes) {
@@ -198,7 +187,7 @@ handle_accepted_socket(int socket) {
 
 	/*we parse the bytes: first byte is the action, following are the id, if any */
 	/* CLIENT_WANTS_VIDEO - the client wants a video */
-	/* CLIENT_SENDING_US_VIDEO - the client wants to send the server a video*/
+	/* CLIENT_SENDING_SERVER_VIDEO - the client wants to send the server a video*/
     int action = buf[0];
 	int id = buf[1];
 
@@ -206,7 +195,7 @@ handle_accepted_socket(int socket) {
 		case CLIENT_WANTS_VIDEO:
 			send_requested_file(socket, id);
 			break;
-		case CLIENT_SENDING_US_VIDEO:
+		case CLIENT_SENDING_SERVER_VIDEO:
 			receive_file(socket);
 			break;
 		default:
