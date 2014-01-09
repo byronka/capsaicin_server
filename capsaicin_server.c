@@ -10,32 +10,34 @@
 #include "ntwk_utils.h"
 #include "basic_io.h"
 
-#define OK_MESSAGE 0
-#define CLIENT_WANTS_VIDEO 1
-#define CLIENT_SENDING_SERVER_VIDEO 2
 
+#define CTRL_MSG_SIZE 16 /* size of messages for managing communication */
+
+
+#define CLIENT_WANTS_VIDEO 1 /* the client wants a video */
+#define CLIENT_SENDING_SERVER_VIDEO 2 /* the client wants to send the server a video*/
+#define SEND_SERVER_VIDEO 3
+#define SEND_CLIENT_VIDEO 4
 
 int
 read_from_stream_into_file(int socket, int file) {
 	ssize_t max_buf_size = 1024;
 	unsigned char buf[max_buf_size];
-	while(1) { /* will break out if eof, exit() otherwise */
+	int result;
+	do {
 		bzero(buf, max_buf_size);
-		int result = Read(socket, buf, max_buf_size);
+		result = Read(socket, buf, max_buf_size);
 		if (result > 0) { /* we read some bytes */
 			fprintf(stderr, "putting %d bytes into file\n", result);
 			Write(file, buf, result);
 		}
-		if (result == 0) { /* returning 0 means no more bytes to write */
-			fprintf(stderr, "closing the file\n");
-			Close(file);
-			break; /* here, we leave the loop if eof*/
-		}
 		if (result < 0) { /* -1 means general error */
 				perror("read socket error");
-				exit(13);
+				exit(13); /* TODO - BK - 1/9/2014 - do we need a better way to exit? */
 		}
-	}
+	} while(result != 0);  /* returning 0 means no more bytes to write */
+	fprintf(stderr, "closing the file\n");
+	Close(file);
 	return 0; /* TODO - BK no return info implemented */
 }
 
@@ -58,7 +60,7 @@ send_requested_file(int socket, int id) {
 int
 receive_file(int socket) {
 	/* reply to client we are ready */
-	unsigned char msg = OK_MESSAGE;
+	unsigned char msg = SEND_SERVER_VIDEO;
 	Write(socket, &msg, sizeof(&msg));
 
 	/* receive file */
@@ -69,12 +71,10 @@ receive_file(int socket) {
 
 int
 handle_accepted_socket(int socket) {
-	unsigned char buf[2];
-	int request = Read(socket, buf, sizeof(buf));
+	unsigned char buf[CTRL_MSG_SIZE];
+	Read(socket, buf, CTRL_MSG_SIZE);
 
 	/*we parse the bytes: first byte is the action, following are the id, if any */
-	/* CLIENT_WANTS_VIDEO - the client wants a video */
-	/* CLIENT_SENDING_SERVER_VIDEO - the client wants to send the server a video*/
     int action = buf[0];
 	int id = buf[1];
 
@@ -86,7 +86,7 @@ handle_accepted_socket(int socket) {
 			receive_file(socket);
 			break;
 		default:
-			fprintf(stderr, "no action sent. buffer[0] is %u and "
+			fprintf(stderr, "error: no action sent. buffer[0] is %u and "
 					"buffer[1] is %u. aborting\n", buf[0], buf[1]);
 			exit(12);
 	}
