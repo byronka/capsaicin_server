@@ -73,6 +73,7 @@ simple_sendfile(int fd, int s, off_t *sbytes) {
 		sbytes, /* we'll get the number of bytes sent */
 		0 /* no flags */
 		);
+	Close(fd);
 	return result;
 }
 
@@ -102,8 +103,10 @@ Close(int fd) {
 int
 Open(const char *path, int flags, ...) {
 	int fd;
-	if ((fd = open(path, flags)) < 0) {
+	if ((fd = open(path, flags, 0700)) < 0) {
 		perror("open file error");
+		fprintf(stderr, "path was %s\n", path);
+		fprintf(stderr, "flags were %d\n", flags);
 		exit(7);
 	}
 	return fd;
