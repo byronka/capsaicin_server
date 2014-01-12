@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     exit(1);
   }
   /* create a socket */
-  sockd = socket(AF_INET, SOCK_DGRAM, 0);
+  sockd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockd == -1)
   {
     perror("Socket creation error");
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
   strcpy(buf, "Hello world\n");
 
-  /* server address */ 
+  /* server address */
   srv_addr.sin_family = AF_INET;
   inet_aton(argv[1], &srv_addr.sin_addr);
   srv_addr.sin_port = htons(atoi(argv[2]));
