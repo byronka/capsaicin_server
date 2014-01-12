@@ -89,7 +89,7 @@ receive_file(int socket, int id) {
 
 	char pathbuf[128];
 	sprintf(pathbuf, VIDEO_PATH_BASE,id);
-	int file = Open(pathbuf, O_RDWR | O_CREAT | O_APPEND);
+	int file = Open(pathbuf, O_RDWR | O_CREAT);
 	read_from_stream_into_file(socket, file);
 	return 0;
 }
