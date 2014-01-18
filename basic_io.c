@@ -83,9 +83,8 @@ Sendfile(int fd, int s, off_t offset, size_t nbytes, struct sf_hdtr *hdtr, off_t
 	if ((result = sendfile(fd, s, offset, nbytes, hdtr, sbytes, flags)) < 0) {
 		perror("sendfile error");
 		fprintf(stderr, "sendfile error; inputs fd[%d] s[%d] offset[%lld]"
-				"nbytes[%d] hdtr[%p] sbytes[%p] flags[%d]",
-				fd, s, offset, nbytes, hdtr, sbytes, flags);
-		exit(1);
+				"nbytes[%d] hdtr[%p] sbytes[%lld] flags[%d]",
+				fd, s, offset, nbytes, hdtr, *sbytes, flags);
 	}
 	return result;
 }

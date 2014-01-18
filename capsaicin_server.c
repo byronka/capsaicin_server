@@ -15,6 +15,7 @@
 
  /* size of messages for managing communication */
 #define CTRL_MSG_SIZE 16 
+#define OK_MSG 0
 #define ACTION_CLIENT_WANTS_VIDEO 1
 #define ACTION_CLIENT_SENDING_SERVER_VIDEO 2 
 #define VIDEO_PATH_BASE "/usr/local/var/videos/%d"
@@ -48,7 +49,8 @@ read_from_stream_into_file(int socket, int file) {
 		}
 		if (result < 0) { /* -1 means general error */
 				perror("read socket error");
-				exit(13); /* TODO - BK - 1/9/2014 - do we need a better way to exit? */
+		 /* TODO - BK - 1/9/2014 - do we need a better way to exit? */
+				exit(13); 
 		}
 	} while(result != 0);  /* returning 0 means no more bytes to write */
 #ifdef DEBUG
@@ -62,8 +64,8 @@ int
 send_requested_file(int socket, int id) {
 	int myfile;
 #ifdef DEBUG
-	fprintf(stdout, "Sending requested file id[%d] to socket id [%d]\n",
-			socket, id);
+	fprintf(stdout, "\nSending requested file id[%d] to socket id [%d]\n",
+			id, socket);
 #endif
 
 	/* TODO - BK - 1/11/14 - need to make sure below line is safe */
