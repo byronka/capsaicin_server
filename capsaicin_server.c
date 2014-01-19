@@ -21,6 +21,7 @@
 #define VIDEO_PATH_BASE "/usr/local/var/videos/%d"
 
 #define ACTION_TELL_CLIENT_SERVER_IS_READY 3
+#define BUF_SIZE 1024
 
 static int read_from_stream_into_file(int socket, int file);
 static int send_requested_file(int socket, int id);
@@ -63,19 +64,32 @@ read_from_stream_into_file(int socket, int file) {
 int
 send_requested_file(int socket, int id) {
 	int myfile;
-#ifdef DEBUG
-	fprintf(stdout, "\nSending requested file id[%d] to socket id [%d]\n",
-			id, socket);
-#endif
-
-	/* TODO - BK - 1/11/14 - need to make sure below line is safe */
-			
 	char pathbuf[128];
 	sprintf(pathbuf, VIDEO_PATH_BASE ,id);
-	myfile = Open(pathbuf, O_RDONLY);
 
-	off_t sbytes;
-	simple_sendfile(myfile, socket, &sbytes);
+#ifdef DEBUG
+	fprintf(stderr, "\nSending requested file id[%d] to socket id [%d]\n",
+			id, socket);
+	fprintf(stderr, "\nabout to open file at %s", pathbuf);
+#endif
+
+	myfile = Open(pathbuf, O_RDONLY | O_NONBLOCK);
+
+#ifdef DEBUG
+	fprintf(stderr, "\nSending file at %s to socket %d", pathbuf, socket);
+#endif
+
+	off_t sbytes = 0;
+	int origin = 0;
+	int nbytes = 1024;
+	simple_sendfile(myfile, socket, origin, nbytes, &sbytes);
+
+#ifdef DEBUG
+	fprintf(stderr, 
+			"\nSuccessfully sent file at "
+			"%s to socket %d, (%lld bytes)", pathbuf, socket, sbytes);
+#endif
+
 	return 0;
 }
 

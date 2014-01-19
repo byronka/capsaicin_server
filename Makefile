@@ -1,5 +1,5 @@
-CFLAGS=-DDEBUG -std=c11 -Wall -std=c11 -pedantic-errors
-CC=clang
+CFLAGS=-gstabs+ -DDEBUG -std=c99 -Wall -std=c99 -pedantic-errors
+CC=gcc
 OBJECTS = capsaicin_server.o ntwk_utils.o basic_io.o main.o
 
 all: capsaicin_server

@@ -62,13 +62,13 @@ Accept(int s, struct sockaddr * restrict addr, socklen_t * restrict addrlen) {
 }
 
 int
-simple_sendfile(int fd, int s, off_t *sbytes) {
+simple_sendfile(int fd, int s, int offset, int nbytes, off_t *sbytes) {
 	int result;
 	result = Sendfile(
 		fd,
 		s,
 		0, /* offset of 0 */
-		0, /* number of bytes, 0 being send whole file */
+		nbytes, /* number of bytes, 0 being send whole file */
 		NULL, /* no header needed yet */
 		sbytes, /* we'll get the number of bytes sent */
 		0 /* no flags */
@@ -78,13 +78,14 @@ simple_sendfile(int fd, int s, off_t *sbytes) {
 }
 
 int
-Sendfile(int fd, int s, off_t offset, size_t nbytes, struct sf_hdtr *hdtr, off_t *sbytes, int flags) {
+Sendfile(int fd, int s, off_t offset, size_t nbytes, 
+		struct sf_hdtr *hdtr, off_t *sbytes, int flags) {
 	int result;
 	if ((result = sendfile(fd, s, offset, nbytes, hdtr, sbytes, flags)) < 0) {
-		perror("sendfile error");
+		perror("\nsendfile error");
 		fprintf(stderr, "sendfile error; inputs fd[%d] s[%d] offset[%lld]"
 				"nbytes[%d] hdtr[%p] sbytes[%lld] flags[%d]",
-				fd, s, offset, nbytes, hdtr, *sbytes, flags);
+				fd, s, offset, nbytes, (void *)hdtr, *sbytes, flags);
 	}
 	return result;
 }
@@ -112,21 +113,21 @@ Open(const char *path, int flags, ...) {
 }
 
 ssize_t
-Write(int d, const void *buf, size_t nbytes) {
+Write(int fd, const void *buf, size_t nbytes) {
 	ssize_t result;
-	if ((result = write(d, buf, nbytes)) < 0) {
+	if ((result = write(fd, buf, nbytes)) < 0) {
 		perror("write error");
-		exit(8);
+		fprintf(stderr, "\nfd:[%d] &buf[%p] nbytes[%d]", fd, buf, nbytes );
 	}
 	return result;
 }
 
 ssize_t
-Read(int d, void *buf, size_t nbytes) {
+Read(int fd, void *buf, size_t nbytes) {
 	ssize_t result;
-	if ((result = read(d, buf, nbytes)) < 0) {
+	if ((result = read(fd, buf, nbytes)) < 0) {
 		perror("read error");
-		exit(9);
+		fprintf(stderr, "\nfd:[%d] &buf[%p] nbytes[%d]", fd, buf, nbytes );
 	}
 	return result;
 }
