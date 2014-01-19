@@ -117,15 +117,36 @@ handle_accepted_socket(int socket) {
 
 	/*we parse the bytes: first byte is the action, following are 
 	  the id, if any */
+	/*
+
+  |--------|-------------------|--------|---------|
+  |        |                   |        |         |
+  |action  | id                | origin | size    |
+  |1 byte  | 16 bytes          |5 bytes | 2 bytes |
+  |--------|-------------------|--------|---------|
+
+Reasoning:
+- I will almost certainly have fewer than 256 specific actions
+- I want to use guids for id's of files.  That means 16 bytes for enough.
+- the origin needs to be of sufficient size to place a pointer anywhere
+	within a file.  Therefore it needs to be as large as the largest
+	file I could expect to see = 5 bytes = 1,099,511,627,776 bytes
+- size - cannot be much larger than 10kilobytes.  therefore, largest
+	necessary is 2 bytes (enough to represent up to 65,536 values).
+	*/
 
     int action = buf[0];
-	int id = buf[1];
+    int id = 0;
 
 	switch(action) {
 		case ACTION_CLIENT_WANTS_VIDEO:
+			id = buf[1];
+			int nbytes = buf[2];
+			int offset = buf[3];
 			send_requested_file(socket, id);
 			break;
 		case ACTION_CLIENT_SENDING_SERVER_VIDEO:
+			id = buf[1];
 			receive_file(socket, id);
 			break;
 		default:

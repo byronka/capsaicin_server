@@ -11,8 +11,8 @@ Accept	basic_io.c	/^Accept(int s, struct sockaddr * restrict addr, socklen_t * r
 BACKLOG	basic_io.h	/^#define BACKLOG /;"	d
 BUF_SIZE	capsaicin_server.c	/^#define BUF_SIZE /;"	d	file:
 Bind	basic_io.c	/^Bind(int s, const struct sockaddr *addr, socklen_t addrlen) {$/;"	f
-CC	Makefile	/^CC=clang$/;"	m
-CFLAGS	Makefile	/^CFLAGS=-DDEBUG -std=c11 -Wall -std=c11 -pedantic-errors$/;"	m
+CC	Makefile	/^CC=gcc$/;"	m
+CFLAGS	Makefile	/^CFLAGS=-gstabs+ -DDEBUG -std=c99 -Wall -std=c99 -pedantic-errors$/;"	m
 CTRL_MSG_SIZE	capsaicin_server.c	/^#define CTRL_MSG_SIZE /;"	d	file:
 Close	basic_io.c	/^Close(int fd) {$/;"	f
 Listen	basic_io.c	/^Listen(int s, int backlog) {$/;"	f
@@ -37,4 +37,4 @@ read_from_stream_into_file	capsaicin_server.c	/^read_from_stream_into_file(int s
 receive_file	capsaicin_server.c	/^receive_file(int socket, int id) {$/;"	f
 run_server	capsaicin_server.c	/^int run_server() {$/;"	f
 send_requested_file	capsaicin_server.c	/^send_requested_file(int socket, int id) {$/;"	f
-simple_sendfile	basic_io.c	/^simple_sendfile(int fd, int s, int nbytes, off_t *sbytes) {$/;"	f
+simple_sendfile	basic_io.c	/^simple_sendfile(int fd, int s, int offset, int nbytes, off_t *sbytes) {$/;"	f
