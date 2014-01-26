@@ -40,7 +40,7 @@ read_from_stream_into_file(int socket, int file) {
 	unsigned char buf[max_buf_size];
 	int result;
 	do {
-		bzero(buf, max_buf_size);
+		memset(buf, 0, max_buf_size);
 		result = Read(socket, buf, max_buf_size);
 		if (result > 0) { /* we read some bytes */
 #ifdef DEBUG

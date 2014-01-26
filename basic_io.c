@@ -21,7 +21,7 @@ Socket(int domain, int type, int protocol) {
 
 struct sockaddr_in
 prepareSocketAddress(struct sockaddr_in sa, int port) {
-	bzero(&sa, sizeof sa);
+	memset(&sa, 0,sizeof sa);
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(port);
 	if (INADDR_ANY) {
