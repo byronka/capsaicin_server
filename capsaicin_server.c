@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include "ntwk_utils.h"
 #include "basic_io.h"
+#include "sendfile_wrapper.h"
 
 #define SERVER_PORT_NUMBER 4321
 
@@ -79,15 +80,15 @@ send_requested_file(int socket, int id) {
 	fprintf(stderr, "\nSending file at %s to socket %d", pathbuf, socket);
 #endif
 
-	off_t sbytes = 0;
+  int sbytes = 0;
 	int origin = 0;
 	int nbytes = 1024;
-	simple_sendfile(myfile, socket, origin, nbytes, &sbytes);
+	sbytes = sendfile_wrapper(myfile, socket, origin, nbytes);
 
 #ifdef DEBUG
 	fprintf(stderr, 
 			"\nSuccessfully sent file at "
-			"%s to socket %d, (%lld bytes)", pathbuf, socket, sbytes);
+			"%s to socket %d, (%d bytes)", pathbuf, socket, sbytes);
 #endif
 
 	return 0;
@@ -115,27 +116,22 @@ handle_accepted_socket(int socket) {
 	unsigned char buf[CTRL_MSG_SIZE];
 	Read(socket, buf, CTRL_MSG_SIZE);
 
-	/*we parse the bytes: first byte is the action, following are 
-	  the id, if any */
 	/*
 
-		 unencrypted packet size = 1 + 16 + 16+ 8 + 4 = 43 bytes
+		 unencrypted packet size = 4 + 1 + 8 + 8 + 8 + 4 = 33 bytes
 
-  |--------|-----------|-----------|--------|---------|
-  |        |           |           |        |         |
-  |action  | entity id | userid    | origin | sbytes  |
-  |1 byte  | 16 bytes  | 16 bytes  |8 bytes | 2 bytes |
-  |--------|-----------|-----------|--------|---------|
+|---------|--------|-----------|-----------|--------|---------|
+| 				|        |           |           |        |         |
+|sessionid|action  | entity id | userid    | offset | sbytes  |
+|  4 bytes|1 byte  | 8  bytes  | 8  bytes  |8 bytes | 4 bytes |
+|---------|--------|-----------|-----------|--------|---------|
 
 Reasoning:
 - I will almost certainly have fewer than 256 specific actions
-- I want to use guids for id's of entities and users.  
-	That means 16 bytes for enough.
-- the origin needs to be of sufficient size to place a pointer anywhere
+- the offset needs to be of sufficient size to place a pointer anywhere
 	within a file.  Therefore it needs to be as large as the largest
-	file I could expect to see = 5 bytes = 1,099,511,627,776 bytes
-- size - cannot be much larger than 10kilobytes.  therefore, largest
-	necessary is 2 bytes (enough to represent up to 65,536 values).
+	file I could expect to see.
+- sbytes - cannot be much larger than 10kilobytes.  
 	*/
 
     int action = buf[0];
