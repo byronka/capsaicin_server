@@ -117,20 +117,12 @@ handle_accepted_socket(int socket) {
   Read(socket, buf, CTRL_MSG_SIZE);
 
   /*
+    new idea.  Text based packets, separated by colons.
+    sessionid:action:entity id:userid:offset:sbytes:seq_num:timestamp
 
-    unencrypted packet size = 4 + 1 + 8 + 8 + 8 + 4 = 33 bytes
+    example:
+    1028:get:94527:274:1828392:1024:3:1391276753
 
-    |---------|--------|-----------|-----------|--------|---------|
-    |sessionid|action  | entity id | userid    | offset | sbytes  |
-    |  4 bytes|1 byte  | 8  bytes  | 8  bytes  |8 bytes | 4 bytes |
-    |---------|--------|-----------|-----------|--------|---------|
-
-    Reasoning:
-    - I will almost certainly have fewer than 256 specific actions
-    - the offset needs to be of sufficient size to place a pointer anywhere
-    within a file.  Therefore it needs to be as large as the largest
-    file I could expect to see.
-    - sbytes - cannot be much larger than 10kilobytes.  
   */
 
   int action = buf[0];
