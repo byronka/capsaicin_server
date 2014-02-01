@@ -176,7 +176,7 @@ fork_server(int s, struct sockaddr_in sa) {
   }
 }
 
-
+/* initialization code */
 int run_server() {
   int primary_socket;
   struct sockaddr_in sa;
