@@ -10,5 +10,8 @@ array_to_struct(unsigned char* buf) {
 and had pointers handling their location - kind of like keys to rooms
 in a hotel?  As these come in I give them their room key and they hang out
 as a queue until some other process comes in to use the value */
-/*
+
+
+/* new idea - we'll have two pointers chasing each other around a preallocated
+   memory space */
 }
