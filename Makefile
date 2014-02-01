@@ -1,6 +1,6 @@
 CFLAGS=-gstabs+ -DDEBUG -std=c11 -Wall -pedantic-errors
 CC=gcc
-OBJECTS = capsaicin_server.o ntwk_utils.o basic_io.o main.o
+OBJECTS = capsaicin_server.o ntwk_utils.o basic_io.o main.o sendfile_wrapper.o
 
 all: capsaicin_server
 

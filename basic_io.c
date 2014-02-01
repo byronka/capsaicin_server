@@ -62,35 +62,6 @@ Accept(int s, struct sockaddr * restrict addr, socklen_t * restrict addrlen) {
 }
 
 int
-simple_sendfile(int fd, int s, int offset, int nbytes, off_t *sbytes) {
-	int result;
-	result = Sendfile(
-		fd,
-		s,
-		0, /* offset of 0 */
-		nbytes, /* number of bytes, 0 being send whole file */
-		NULL, /* no header needed yet */
-		sbytes, /* we'll get the number of bytes sent */
-		0 /* no flags */
-		);
-	Close(fd);
-	return result;
-}
-
-int
-Sendfile(int fd, int s, off_t offset, size_t nbytes, 
-		struct sf_hdtr *hdtr, off_t *sbytes, int flags) {
-	int result;
-	if ((result = sendfile(fd, s, offset, nbytes, hdtr, sbytes, flags)) < 0) {
-		perror("\nsendfile error");
-		fprintf(stderr, "sendfile error; inputs fd[%d] s[%d] offset[%lld]"
-				"nbytes[%d] hdtr[%p] sbytes[%lld] flags[%d]",
-				fd, s, offset, nbytes, (void *)hdtr, *sbytes, flags);
-	}
-	return result;
-}
-
-int
 Close(int fd) {
 	int result;
 	if ((result = close(fd)) < 0) {
