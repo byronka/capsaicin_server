@@ -119,10 +119,10 @@ handle_accepted_socket(int socket) {
 
   /*
     Text based packets, separated by colons.
-    sessionid:action:entity id:userid:offset:sbytes:seq_num:timestamp
+    sessionid:action:entity id:userid:offset:sbytes:seq_num:timestamp:uip
 
     example:
-    1028:get:94527:274:1828392:1024:3:1391276753
+    1028:get:94527:274:1828392:1024:3:1391276753:192.168.56.2
 
   */
 
