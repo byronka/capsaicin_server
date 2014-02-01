@@ -15,7 +15,7 @@
 #define SERVER_PORT_NUMBER 4321
 
 /* size of messages for managing communication */
-#define CTRL_MSG_SIZE 16 
+#define CTRL_MSG_SIZE 256 
 #define OK_MSG 0
 #define ACTION_CLIENT_WANTS_VIDEO 1
 #define ACTION_CLIENT_SENDING_SERVER_VIDEO 2 
@@ -114,10 +114,11 @@ receive_file(int socket, int id) {
 int
 handle_accepted_socket(int socket) {
   unsigned char buf[CTRL_MSG_SIZE];
+  memset(buf, 0, CTRL_MSG_SIZE);
   Read(socket, buf, CTRL_MSG_SIZE);
 
   /*
-    new idea.  Text based packets, separated by colons.
+    Text based packets, separated by colons.
     sessionid:action:entity id:userid:offset:sbytes:seq_num:timestamp
 
     example:
