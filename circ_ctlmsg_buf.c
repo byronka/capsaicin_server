@@ -2,11 +2,15 @@
 
 #define QUEUE_SIZE 1000;
 #define STRING_SIZE 256;
+#define MAX_SUBSCRIBERS 1000;
 
+//variables
 static char circle_queue[QUEUE_SIZE][STRING_SIZE];
 static char* newest_from_client_ptr;
 static char* next_for_processing_ptr;
 static int queued_count;
+static int subscriber_count;
+int (*subscribed_request_handlers[MAX_SUBSCRIBERS]) (int x);
 
 extern int reset_ptrs_and_clear();
 static int adjust_ptr_loc(char* ptr);
@@ -14,12 +18,19 @@ extern char* get_next_for_processing();
 extern int put_into_circular_queue(char* msg);
 
 extern int
-subscribe_for_updates(void f()) {
+subscribe_for_updates(void f(int x)) {
 	return 0; /* TODO - BK - 2/2/2014 - need to implement error codes */
 }
 
 extern int
-reset_ptrs_and_clear() {
+init() {
+	reset_ptrs_and_clear_buf();
+	subscriber_count = 0;
+	memset(subscribed_request_handler, 0, MAX_SUBSCRIBERS);
+}
+
+extern int
+reset_ptrs_and_clear_buf() {
   newest_from_client_ptr = circle_queue;
   next_for_processing_ptr = circle_queue;
   memset(circle_queue, 0, QUEUE_SIZE * STRING_SIZE);

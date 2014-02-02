@@ -21,6 +21,20 @@ static int send_requested_file(int socket, int id);
 static int receive_file(int socket, int id);
 static int handle_accepted_socket(int socket);
 
+/* Note: this program, request_handler, does not know about anything other
+than the circular ctlmsg buffer queue.  It subscribes for any new items
+on the buffer.  This keeps it up to date whether there is anything 
+available waiting on that queue.  If it is free and knows there is 
+something waiting on the buffer, it will try to take it.
+
+The part of this program that accepts messages about the circular buffer
+needs to be a separate thread.
+*/
+extern int
+init_request_handler() {
+ //open socket to circ_ctlmsg_buffer
+ //subscribe to it
+}
 
 static int
 read_from_stream_into_file(int socket, int file) {
