@@ -19,14 +19,14 @@ extern int put_into_circular_queue(char* msg);
 
 extern int
 subscribe_for_updates(void f(int x)) {
-	return 0; /* TODO - BK - 2/2/2014 - need to implement error codes */
+  return 0; /* TODO - BK - 2/2/2014 - need to implement error codes */
 }
 
 extern int
 init() {
-	reset_ptrs_and_clear_buf();
-	subscriber_count = 0;
-	memset(subscribed_request_handler, 0, MAX_SUBSCRIBERS);
+  reset_ptrs_and_clear_buf();
+  subscriber_count = 0;
+  memset(subscribed_request_handler, 0, MAX_SUBSCRIBERS);
 }
 
 extern int

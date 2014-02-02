@@ -17,5 +17,11 @@ in the queue.  As soon as one of them is free, they will try to grab that item.
 has all the information necessary for the request handler to fulfill the
 request.
 
-5) CtlMsg is able to decrypt the message before it is stored in the 
+5) CtlMsg decrypts the message before it is stored in the 
 circular buffer.
+
+6) The circ_ctlmsg_buf program is being hit on two sides - by
+the server, and by multiple request_handlers.  Both sides
+will be slamming it hard, but we don't want it to become a choke point.
+It is important to synchronize data access and provide smooth flow - but
+primarily, synchronize.
