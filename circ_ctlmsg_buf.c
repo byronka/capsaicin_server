@@ -14,6 +14,11 @@ extern char* get_next_for_processing();
 extern int put_into_circular_queue(char* msg);
 
 extern int
+subscribe_for_updates(void f()) {
+	return 0; /* TODO - BK - 2/2/2014 - need to implement error codes */
+}
+
+extern int
 reset_ptrs_and_clear() {
   newest_from_client_ptr = circle_queue;
   next_for_processing_ptr = circle_queue;
