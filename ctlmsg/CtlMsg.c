@@ -1,6 +1,11 @@
 #include <CtlMsg.h>
 
-struct CtlMsg {
+/*
+CtlMsg - we parse the message, then return a pointer to a struct
+with the info we want to use.
+*/
+
+extern struct CtlMsg {
   int sid; /* session id */
   int action; /* action: get, set, ok, etc... */
   long eid; /* entity id: video id, etc. */

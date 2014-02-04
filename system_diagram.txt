@@ -20,7 +20,7 @@
                     +--------+----------+
                              |
                           +--+-+
-                          |    | thread to listen to server
+                          |    |   socket listening to server
                           +----+   messages are decrypted by this point
                             |||
                       +-----+-+------+
@@ -28,16 +28,16 @@
                       |circ_ctlmsg_buf
                      ///-----+++----\--
                     ///      |||     \\\-
-                  +-//-+    ++++-+   +\\--+
-                  |    |    |    |   |    |thread to talk to buffer
-                  ++---+    +--+-+   +----+
-                   |           |          |
-                   |           |          |
-              +----+----+   +--+-----+  +-+-------+
-              |Request  |   |Request |  |Request  |
-              |Handler  |   |Handler |  |Handler  |
-              |         |   |        |  |         |
-              +---------+   +--------+  +---------+
+                  +-//-+    ++++-+   +\\--+  multiple sockets, one per request handler
+                  |    |    |    |   |    +-       
+                  ++---+    +--+-+   +----+ \---
+                   |           |          |     \--
+                   |           |          |	   \---
+              +----+----+   +--+-----+  +-+-------+  +-\-..
+              |Request  |   |Request |  |Request  |  |
+              |Handler  |   |Handler |  |Handler  |  |
+              |         |   |        |  |         |  |
+              +---------+   +--------+  +---------+  +--...
                    Request handlers do the heavy lifting -
                     they do the processing of the message
                     and eventually get back to the client.
