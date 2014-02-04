@@ -8,8 +8,21 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include "basic_io.h"
+#define BACKLOG 4
 
-int
+
+/***************************************************
+**    General IO Routines for the system          **
+**                                                **
+**Author: Byron Katz, 2014                        **
+**Purpose: These methods are used throughout the  **
+**  system for general IO to files and sockets.   **
+**  Note that methods with capitalized first      **
+**  letters are wrapped for error handling.       **
+**                                                **
+****************************************************/
+
+extern int
 Socket(int domain, int type, int protocol) {
 	int result;
 	if ((result = socket(domain, type, protocol)) < 0) {
@@ -19,7 +32,7 @@ Socket(int domain, int type, int protocol) {
 	return result;
 }
 
-struct sockaddr_in
+extern struct sockaddr_in
 prepareSocketAddress(struct sockaddr_in sa, int port) {
 	memset(&sa, 0,sizeof sa);
 	sa.sin_family = AF_INET;
@@ -30,7 +43,7 @@ prepareSocketAddress(struct sockaddr_in sa, int port) {
 	return sa;
 }
 
-int
+extern int
 Bind(int s, const struct sockaddr *addr, socklen_t addrlen) {
 	int result;
 	if ((result = bind(s, addr, addrlen)) < 0) {
@@ -40,7 +53,7 @@ Bind(int s, const struct sockaddr *addr, socklen_t addrlen) {
 	return result;
 }
 
-int
+extern int
 Listen(int s, int backlog) {
 	int result;
 	if ((result = listen(s, backlog)) < 0) {
@@ -51,7 +64,7 @@ Listen(int s, int backlog) {
 }
 
 
-int
+extern int
 Accept(int s, struct sockaddr * restrict addr, socklen_t * restrict addrlen) {
 	int accepted_socket;
 	if ((accepted_socket = accept(s, addr, addrlen)) < 0) {
@@ -61,7 +74,7 @@ Accept(int s, struct sockaddr * restrict addr, socklen_t * restrict addrlen) {
 	return accepted_socket;
 }
 
-int
+extern int
 Close(int fd) {
 	int result;
 	if ((result = close(fd)) < 0) {
@@ -71,7 +84,7 @@ Close(int fd) {
 	return result;
 }
 
-int
+extern int
 Open(const char *path, int flags, ...) {
 	int fd;
 	if ((fd = open(path, flags, 0700)) < 0) {
@@ -83,7 +96,7 @@ Open(const char *path, int flags, ...) {
 	return fd;
 }
 
-ssize_t
+extern ssize_t
 Write(int fd, const void *buf, size_t nbytes) {
 	ssize_t result;
 	if ((result = write(fd, buf, nbytes)) < 0) {
@@ -93,7 +106,7 @@ Write(int fd, const void *buf, size_t nbytes) {
 	return result;
 }
 
-ssize_t
+extern ssize_t
 Read(int fd, void *buf, size_t nbytes) {
 	ssize_t result;
 	if ((result = read(fd, buf, nbytes)) < 0) {
